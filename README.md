@@ -26,7 +26,12 @@ eventHandler.OnObjectActivate = function(pid, cellDescription)
 
                 if isObjectPlayer then
 ```
-at the bottom add: ```Players[pid].assignedTargetPd = tes3mp.GetObjectPid(index)``` then save and close the ```eventHandler```.
+at the bottom add: 
+```
+Players[pid].assignedTargetPd = tes3mp.GetObjectPid(index)
+Partyhealth.condition[pid] = true
+``` 
+then save and close the ```eventHandler```.
 
 3. Open ```serverCore.lua``` at the top add ```Partyhealth = require("Partyhealth")``` and find this code: 
 ```
@@ -39,16 +44,22 @@ at the bottom add:
 ```
 secondsUntilPartyUpdate = secondsUntilPartyUpdate - 1
 
-            if secondsUntilPartyUpdate < 1 then
-                secondsUntilPartyUpdate = 2
-                for pid, pl in pairs(Players) do
-					if Players[pid].assignedTargetPd ~= nil then
+	if secondsUntilPartyUpdate < 1 then
+		secondsUntilPartyUpdate = 2
+		for pid, pl in pairs(Players) do
+			if pl ~= nil and pl:IsLoggedIn() then
+				if Players[pid].assignedTargetPd ~= nil then
+					if  Players[Players[pid].assignedTargetPd] ~= nil and Players[Players[pid].assignedTargetPd]:IsLoggedIn() then
 						if Partyhealth.condition[pid] then
 							Partyhealth.One(pid, Players[pid].assignedTargetPd )
 						end
 					else
+						Partyhealth.condition[pid] = false
 					end
-            end
+				end
+			end
+		end
+	end
 ``` 
 then save and close the ```serverCore```.
 
@@ -62,11 +73,11 @@ That should be all.
 
 
 ## How to do it:
-If it needs further explanation - approach another ```Player``` and hit the button you use for opening ```doors```.
+If it needs further explanation - approach another ```Player``` and hit the button which you use for opening ```doors```.
 
 ## Known problems:
-1. I only tested it among 2 players. I'm not experienced enough to know from the code if you can display health of more than one person, I would have to try that some time.
-2. There's no way to stop the health update yet apart from logging out (I guess). I want to add a condition that can be triggered by typing ```/hp``` in the chat. Maybe it can be even further optimized to ```/hp <pid>``` so you can turn off displaying of certain person's HP.
+1. I didn't have option to test it with more players than 2 - I don't know how organized it will be when you activate more than one player.
+
 
 
 ## Credits
