@@ -6,7 +6,7 @@ When ```Player1``` 'Activates' ```Player2``` he gets continuous update of ```Pla
 ## How to INSTALL:
 1. Download the ```Partyhealth.lua``` and put it in */mp-stuff/scripts/*
 2. Open ```eventHandler.lua``` and find this code:
-```
+```lua
 eventHandler.OnObjectActivate = function(pid, cellDescription)
     if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
 
@@ -27,21 +27,21 @@ eventHandler.OnObjectActivate = function(pid, cellDescription)
                 if isObjectPlayer then
 ```
 at the bottom add: 
-```
+```lua
 Players[pid].assignedTargetPd = tes3mp.GetObjectPid(index)
 Partyhealth.condition[pid] = true
 ``` 
 then save and close the ```eventHandler```.
 
 3. Open ```serverCore.lua``` at the top add ```Partyhealth = require("Partyhealth")``` and find this code: 
-```
+```lua
 function UpdateTime()
 	
 	
         if config.passTimeWhenEmpty or tableHelper.getCount(Players) > 0 then
 ```
 at the bottom add: 
-```
+```lua
 secondsUntilPartyUpdate = secondsUntilPartyUpdate - 1
 
 	if secondsUntilPartyUpdate < 1 then
@@ -64,7 +64,7 @@ secondsUntilPartyUpdate = secondsUntilPartyUpdate - 1
 then save and close the ```serverCore```.
 
 4. Open ```commmandHandler.lua``` at the top add ```Partyhealth = require("Partyhealth")``` and add this code somewhere under other commands:
-```
+```lua
 	elseif cmd[1] == "hp" then
 		Partyhealth.condition[pid] = false
 ```
