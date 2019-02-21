@@ -72,8 +72,8 @@ then save and close the ```commandHandler```.
 That should be all.
 
 
-## How to do it:
-If it needs further explanation - approach another ```Player``` and hit the button which you use for opening ```doors```.
+## How to do it in-game (if it needs further explanation):
+Approach another ```Player``` and hit the button which you use for opening ```doors```.
 
 ## Known problems:
 1. I didn't have option to test it with more players than 2 - I don't know how organized it will be when you activate more than one player.
