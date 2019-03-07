@@ -112,9 +112,15 @@ That should be all.
 ## How to do it in-game (if it needs further explanation):
 Approach another ```Player``` and hit the button which you use for opening ```doors```.
 
+To turn it off write in CHAT ```/hp``` (notice: It will stop all mesagges from appearing and you will have to Activate player again.)
+To switch between GUI message and chat message use any of these in the CHAT:
+GUI - /show default ; /show gui ; /show 0
+CHAT - /show chat ; /show 1
+
 ## Known problems:
 Feel free to tell me, I don't know if I'll be able to solve them though.
 
+You can't turn off health-messaging for only one specific person, yet.
 
 
 ## Credits
