@@ -26,9 +26,12 @@ eventHandler.OnObjectActivate = function(pid, cellDescription)
 
                 if isObjectPlayer then
 ```
-at the bottom add: 
+below add: 
 ```lua
-Players[pid].assignedTargetPd = tes3mp.GetObjectPid(index)
+if type(Players[pid].playersTracked) ~= "table" then Players[pid].playersTracked = {} end
+if not tableHelper.containsValue(Players[pid].playersTracked, tes3mp.GetObjectPid(index)) then
+	table.insert(Players[pid].playersTracked, tes3mp.GetObjectPid(index))
+end
 Partyhealth.condition[pid] = true
 ``` 
 then save and close the ```eventHandler```.
@@ -40,33 +43,67 @@ function UpdateTime()
 	
         if config.passTimeWhenEmpty or tableHelper.getCount(Players) > 0 then
 ```
-at the bottom add: 
+below add: 
 ```lua
 secondsUntilPartyUpdate = secondsUntilPartyUpdate - 1
 
-	if secondsUntilPartyUpdate < 1 then
+if secondsUntilPartyUpdate < 1 then
 		secondsUntilPartyUpdate = 2
 		for pid, pl in pairs(Players) do
 			if pl ~= nil and pl:IsLoggedIn() then
-				if Players[pid].assignedTargetPd ~= nil then
-					if  Players[Players[pid].assignedTargetPd] ~= nil and Players[Players[pid].assignedTargetPd]:IsLoggedIn() then
-						if Partyhealth.condition[pid] then
-							Partyhealth.One(pid, Players[pid].assignedTargetPd )
+				if Players[pid].playersTracked ~= nil then
+					for _, pidTracked in pairs(Players[pid].playersTracked) do
+						if  pidTracked ~= nil and Players[pidTracked]:IsLoggedIn() then
+							if Partyhealth.condition[pid] then
+								if Partyhealth.Display[pid] == "gui" then
+									Partyhealth.Gui(pid, pidTracked)
+								elseif Partyhealth.Display[pid] == "chat" then
+									Partyhealth.Chat(pid, pidTracked)
+								else
+									Partyhealth.Gui(pid, pidTracked)
+								end
+							end
+						else
+							Partyhealth.condition[pid] = false
+							Partyhealth.Display[pid] = "gui"
 						end
-					else
-						Partyhealth.condition[pid] = false
 					end
 				end
+			else
+				Partyhealth.condition[pid] = false
+				Partyhealth.Display[pid] = "gui"
 			end
 		end
-	end
+end
 ``` 
+then find this code: 
+```lua
+function OnPlayerConnect(pid)
+```
+and at the bottom above last ```end``` (not below the function) add: ```Partyhealth.OnConnect(pid)```
+
+lastly find this code:
+```lua
+function OnPlayerDisconnect(pid)
+```
+and just below the function add: ```Partyhealth.OnDisconnect(pid)```
+
 then save and close the ```serverCore```.
 
 4. Open ```commmandHandler.lua``` at the top add ```Partyhealth = require("Partyhealth")``` and add this code somewhere under other commands:
 ```lua
-	elseif cmd[1] == "hp" then
-		Partyhealth.condition[pid] = false
+elseif cmd[1] == "hp" then
+	Partyhealth.condition[pid] = false
+
+elseif cmd[1] == "show" then
+if cmd[2] == "chat" or cmd[2] == "Chat" or cmd[2] == "1" then
+	Partyhealth.Display[pid] = "chat" 
+elseif cmd[2] == "Gui" or cmd[2] == "gui" or cmd[2] == "0" or cmd[2] == "Default" or cmd[2] == "default" then
+	Partyhealth.Display[pid] = "gui"
+else
+	tes3mp.SendMessage(pid, "Wrong input, for chat use: 'chat' or '1', for gui use: 'gui' or '1'".."\n", false)  
+	Partyhealth.Display[pid] = "gui"
+end
 ```
 then save and close the ```commandHandler```.
 That should be all.
@@ -76,7 +113,7 @@ That should be all.
 Approach another ```Player``` and hit the button which you use for opening ```doors```.
 
 ## Known problems:
-1. I didn't have option to test it with more players than 2 - I don't know how organized it will be when you activate more than one player.
+Feel free to tell me, I don't know if I'll be able to solve them though.
 
 
 
