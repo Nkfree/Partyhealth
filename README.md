@@ -94,6 +94,9 @@ then save and close the ```serverCore```.
 ```lua
 elseif cmd[1] == "hp" then
 	Partyhealth.condition[pid] = false
+	Players[pid].playersTracked = nil
+	Partyhealth.currentHealth[pid] = {}
+	Partyhealth.OnDisconnect(pid)
 
 elseif cmd[1] == "show" then
 if cmd[2] == "chat" or cmd[2] == "Chat" or cmd[2] == "1" then
