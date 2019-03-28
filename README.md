@@ -104,10 +104,13 @@ That should be all.
 ## How to do it in-game (if it needs further explanation):
 Approach another ```Player``` and hit the button which you use for opening ```doors```.
 
-To turn it off write in CHAT ```/hp``` (notice: It will stop all mesagges from appearing and you will have to Activate player again.)
+To turn it off write in CHAT ```/hp <pid> (or <name>); example /hp 1 or /hp Player1``` (notice: Typing the command again should turn it back on)
+
 To switch between GUI message and chat message use any of these in the CHAT:
-GUI - /show default ; /show gui ; /show 0
-CHAT - /show chat ; /show 1
+
+GUI - ```/gui <pid> (or <name>)```
+	
+CHAT - ```/chat <pid> (or <name>)```
 
 ## Known problems:
 Feel free to tell me, I don't know if I'll be able to solve them though.
