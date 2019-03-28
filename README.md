@@ -1,10 +1,10 @@
 # TES3MP-Partyhealth-Add-on
 
 ## What it does:
-When ```Player1``` 'Activates' ```Player2``` he gets continuous update of ```Player2```'s health as GUImessage.
+When ```Player1``` 'Activates' ```Player2``` he gets continuous update of ```Player2```'s health as GUI or CHAT message.
 
 ## How to INSTALL:
-1. Download the ```Partyhealth.lua``` and put it in */mp-stuff/scripts/*
+1. Download the ```Partyhealth.lua``` and put it in */server/scripts/*
 2. Open ```eventHandler.lua``` and find this code:
 ```lua
 eventHandler.OnObjectActivate = function(pid, cellDescription)
@@ -25,14 +25,12 @@ eventHandler.OnObjectActivate = function(pid, cellDescription)
                 local objectPid, objectRefId, objectUniqueIndex
 
                 if isObjectPlayer then
+                    object.pid = tes3mp.GetObjectPid(index)
+		    local objectPid = object.pid
 ```
 below add: 
 ```lua
-if type(Players[pid].playersTracked) ~= "table" then Players[pid].playersTracked = {} end
-if not tableHelper.containsValue(Players[pid].playersTracked, tes3mp.GetObjectPid(index)) then
-	table.insert(Players[pid].playersTracked, tes3mp.GetObjectPid(index))
-end
-Partyhealth.condition[pid] = true
+Partyhealth.OnActivate(pid, objectPid)
 ``` 
 then save and close the ```eventHandler```.
 
@@ -48,39 +46,37 @@ below add:
 secondsUntilPartyUpdate = secondsUntilPartyUpdate - 1
 
 if secondsUntilPartyUpdate < 1 then
-		secondsUntilPartyUpdate = 2
-		for pid, pl in pairs(Players) do
-			if pl ~= nil and pl:IsLoggedIn() then
-				if Players[pid].playersTracked ~= nil then
-					for _, pidTracked in pairs(Players[pid].playersTracked) do
-						if  pidTracked ~= nil and Players[pidTracked]:IsLoggedIn() then
-							if Partyhealth.condition[pid] then
-								if Partyhealth.Display[pid] == "gui" then
-									Partyhealth.Gui(pid, pidTracked)
-								elseif Partyhealth.Display[pid] == "chat" then
-									Partyhealth.Chat(pid, pidTracked)
-								else
-									Partyhealth.Gui(pid, pidTracked)
-								end
+	secondsUntilPartyUpdate = 2
+	for pid, pl in pairs(Players) do
+		if pl ~= nil and pl:IsLoggedIn() then
+			if Players[pid].Partyhealth ~= nil then
+				for pidTracked, _ in pairs(Players[pid].Partyhealth) do	
+					if pidTracked ~= nil and Players[tonumber(pidTracked)] ~= nil and Players[tonumber(pidTracked)]:IsLoggedIn() then
+						if Players[pid].Partyhealth[pidTracked].condition == true then
+							if Players[pid].Partyhealth[pidTracked].displayType == "gui" then
+								Partyhealth.Gui(pid, pidTracked)
+							elseif Players[pid].Partyhealth[pidTracked].displayType == "chat" then
+								Partyhealth.Chat(pid, pidTracked)
+							else
+								Partyhealth.Gui(pid, pidTracked)
 							end
-						else
-							Partyhealth.condition[pid] = false
-							Partyhealth.Display[pid] = "gui"
 						end
+					else
+						print("pidTracked: "..pidTracked.." was deleted\n")
+						Players[pid].Partyhealth[pidTracked] = nil
 					end
 				end
-			else
-				Partyhealth.condition[pid] = false
-				Partyhealth.Display[pid] = "gui"
+
 			end
 		end
+	end
 end
 ``` 
 then find this code: 
 ```lua
 function OnPlayerConnect(pid)
 ```
-and at the bottom above last ```end``` (not below the function) add: ```Partyhealth.OnConnect(pid)```
+and at the bottom of the function above last ```end``` add: ```Partyhealth.OnConnect(pid)```
 
 lastly find this code:
 ```lua
@@ -93,20 +89,13 @@ then save and close the ```serverCore```.
 4. Open ```commmandHandler.lua``` at the top add ```Partyhealth = require("Partyhealth")``` and add this code somewhere under other commands:
 ```lua
 elseif cmd[1] == "hp" then
-	Partyhealth.condition[pid] = false
-	Players[pid].playersTracked = nil
-	Partyhealth.currentHealth[pid] = {}
-	Partyhealth.OnDisconnect(pid)
+	Partyhealth.ComHP(pid, cmd[2])
 
-elseif cmd[1] == "show" then
-if cmd[2] == "chat" or cmd[2] == "Chat" or cmd[2] == "1" then
-	Partyhealth.Display[pid] = "chat" 
-elseif cmd[2] == "Gui" or cmd[2] == "gui" or cmd[2] == "0" or cmd[2] == "Default" or cmd[2] == "default" then
-	Partyhealth.Display[pid] = "gui"
-else
-	tes3mp.SendMessage(pid, "Wrong input, for chat use: 'chat' or '1', for gui use: 'gui' or '1'".."\n", false)  
-	Partyhealth.Display[pid] = "gui"
-end
+elseif cmd[1] == "chat" or cmd[1] == "Chat" or cmd[1] == "1" and cmd[2] ~= nil then
+	Partyhealth.ComChat(pid, cmd[2])
+
+elseif cmd[1] == "Gui" or cmd[1] == "gui" or cmd[1] == "0" or cmd[1] == "Default" or cmd[1] == "default" and cmd[2] ~= nil then
+	Partyhealth.ComGui(pid, cmd[2])
 ```
 then save and close the ```commandHandler```.
 That should be all.
@@ -122,8 +111,6 @@ CHAT - /show chat ; /show 1
 
 ## Known problems:
 Feel free to tell me, I don't know if I'll be able to solve them though.
-
-You can't turn off health-messaging for only one specific person, yet.
 
 
 ## Credits
