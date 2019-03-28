@@ -14,7 +14,7 @@ function Partyhealth.OnConnect(pid)
 
 	local playerName = tes3mp.GetName(pid)
 	if logicHandler.IsPlayerNameLoggedIn(playerName) then
-		print("Partyhealth check ran fine")
+		print("PartyhealthCheck to ensure connect attempt from player with already existing name won't crash the server.\n")
 		
 	else
 		if Players[pid].Partyhealth ~= nil then Players[pid].Partyhealth = {} end
