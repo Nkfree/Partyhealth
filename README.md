@@ -1,5 +1,7 @@
 # TES3MP-Partyhealth-Add-on
 
+REQUIRES: [helpHelper](https://github.com/Nkfree/helpHelper)!
+
 ## What it does:
 When ```Player1``` 'Activates' ```Player2``` he gets continuous update of ```Player2```'s health as GUI or CHAT message.
 
