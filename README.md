@@ -3,7 +3,11 @@
 REQUIRES: [helpHelper](https://github.com/Nkfree/helpHelper)!
 
 ## What it does:
-When ```Player1``` 'Activates' ```Player2``` he gets continuous update of ```Player2```'s health as GUI or CHAT message.
+You can add another Player into your Friendlist.
+Then if ```Friend1``` 'Activates' ```Friend2``` he gets continuous update of ```Friend2```'s health as GUI or CHAT message.
+
+There is also a Blacklist.
+
 
 ## How to INSTALL:
 1. Download the ```main.lua``` and put it in */server/scripts/custom/Partyhealth*
