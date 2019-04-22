@@ -1,11 +1,9 @@
 jsonInterface = require("jsonInterface")
 tableHelper = require("tableHelper")
+menuHelper = require("menuHelper")
 
 local affectedlist = {}
 local friendsData = {}
-
-menuHelper = require("menuHelper")
-
 local helpHelper = {}
 
 
