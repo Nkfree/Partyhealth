@@ -4,6 +4,38 @@ tableHelper = require("tableHelper")
 local affectedlist = {}
 local friendsData = {}
 
+menuHelper = require("menuHelper")
+
+local helpHelper = {}
+
+
+
+helpHelper.CreateMenu = function(pid, menuTitle, menuHeader, command, label)
+
+
+if tostring(menuTitle) and tostring(menuHeader) and command and label then
+	
+	local text
+	local getText 
+	getText  = color.Orange .. menuHeader .. "\n"
+	for k, v in pairs(command) do
+		if tostring(command[k]) and tostring(label[k]) then
+				getText  = getText  .. color.Yellow .. "/" .. command[k] .. "\n" .. color.White .. label[k] .. "\n"
+		end
+	end
+	
+	Menus[menuTitle] = {
+		text = getText,
+		buttons = {
+			{ caption = "Exit", destinations = nil }
+		}
+}
+end
+return menuHelper.DisplayMenu(pid, menuTitle)
+end
+
+return helpHelper
+
 local config = {}
 
 config.displayFastHP = false
