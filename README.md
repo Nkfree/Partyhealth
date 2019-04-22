@@ -1,6 +1,5 @@
 # TES3MP-Partyhealth-Add-on
 
-REQUIRES: [helpHelper](https://github.com/Nkfree/helpHelper)!
 
 ## What it does:
 You can add another Player into your Friendlist.
