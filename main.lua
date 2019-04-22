@@ -32,8 +32,6 @@ end
 return menuHelper.DisplayMenu(pid, menuTitle)
 end
 
-return helpHelper
-
 local config = {}
 
 config.displayFastHP = false
