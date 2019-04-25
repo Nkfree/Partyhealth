@@ -17,7 +17,7 @@ Partyhealth.sender = {}
 
 -- CHANGE THESE ACCORDING TO INSTRUCTIONS
 -- define config entries
-config.displayFastHP = false -- when true you can activate player beforehand and when you add them to your friendlist they'll hp will get displayed immediatelly
+config.displayFastHP = false -- when true you can activate player beforehand and when you add them to your friendlist their hp will get displayed immediatelly
 config.showSameHealthTimes = 3 -- if you don't want same health to be displayed over and over you can set how many times the same value will get displayed; set to 0 to disable
 
 -- commands used in-game; change the command inside ""
