@@ -851,7 +851,9 @@ end
 UnpauseHP = function(pid)-- unpauses hp after another GUI element is closed
 	if affectedlist ~= nil then
 		for key, value in pairs(affectedlist[pid]) do
-			Players[pid].Partyhealth[value].compareHealth = 0
+			if Players[pid].Partyhealth[value].sameHealthTimes > 0 then
+				Players[pid].Partyhealth[value].compareHealth = 0
+			end
 			Players[pid].Partyhealth[value].condition = true
 			tes3mp.LogMessage(1, tableHelper.getSimplePrintableTable(affectedlist[pid]))
 		end
@@ -861,7 +863,7 @@ end
 
 -- custom hooks that help for easier implementation of the script
 customEventHooks.registerHandler("OnServerPostInit", Partyhealth.OnServerPostInit)
-customEventHooks.registerValidator("OnPlayerFinishLogin", Partyhealth.OnPlayerFinishLogin)
+customEventHooks.registerHandler("OnPlayerFinishLogin", Partyhealth.OnPlayerFinishLogin)
 customEventHooks.registerHandler("OnObjectActivate", Partyhealth.OnActivate)
 customEventHooks.registerHandler("OnGUIAction", Partyhealth.OnGUIAction)
 customEventHooks.registerHandler("OnPlayerDisconnect", Partyhealth.OnDisconnect)
