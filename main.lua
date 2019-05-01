@@ -134,6 +134,10 @@ end
 
 
 
+-- functions that hook onto serverCore
+
+
+
 Partyhealth.OnActivate = function(EventStatus, pid, cellDescription, objects, players)
 	for index = 0, tes3mp.GetObjectListSize() - 1 do
 		local object = {}
@@ -161,7 +165,7 @@ Partyhealth.OnActivate = function(EventStatus, pid, cellDescription, objects, pl
 end
 
 
--- functions that hook onto serverCore
+
 Partyhealth.OnServerPostInit = function(EventStatus)
 	tes3mp.StartTimer(Partyhealth.Timer)
 	local loadedData = jsonInterface.load("PH_friendslist.json")
