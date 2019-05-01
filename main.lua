@@ -178,7 +178,7 @@ end
 
 
 
-Partyhealth.OnPlayerFinishLogin = function(EventStatus, pid)
+Partyhealth.OnPlayerAuthentified = function(EventStatus, pid)
 	if Players[pid].Partyhealth == nil then Players[pid].Partyhealth = {} end
 	Partyhealth.baseHealth[pid] = {}
 	Partyhealth.healthRatio[pid] = {}
@@ -863,7 +863,7 @@ end
 
 -- custom hooks that help for easier implementation of the script
 customEventHooks.registerHandler("OnServerPostInit", Partyhealth.OnServerPostInit)
-customEventHooks.registerHandler("OnPlayerFinishLogin", Partyhealth.OnPlayerFinishLogin)
+customEventHooks.registerHandler("OnPlayerAuthentified", Partyhealth.OnPlayerAuthentified)
 customEventHooks.registerHandler("OnObjectActivate", Partyhealth.OnActivate)
 customEventHooks.registerHandler("OnGUIAction", Partyhealth.OnGUIAction)
 customEventHooks.registerHandler("OnPlayerDisconnect", Partyhealth.OnDisconnect)
