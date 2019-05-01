@@ -182,18 +182,11 @@ Partyhealth.OnServerPostInit = function(EventStatus)
 end
 
 
-Partyhealth.OnConnect = function(EventStatus, pid)
+Partyhealth.OnPlayerFinishLogin = function(EventStatus, pid)
 
-	local playerName = tes3mp.GetName(pid)
-	if logicHandler.IsPlayerNameLoggedIn(playerName) then
-		-- do nothing --
-		
-	else
-		
-		if Players[pid].Partyhealth == nil then Players[pid].Partyhealth = {} end
-		Partyhealth.baseHealth[pid] = {}
-		Partyhealth.healthRatio[pid] = {}
-	end
+if Players[pid].Partyhealth == nil then Players[pid].Partyhealth = {} end
+Partyhealth.baseHealth[pid] = {}
+Partyhealth.healthRatio[pid] = {}
 end
 
 Partyhealth.OnDisconnect = function(EventStatus, pid)
@@ -904,7 +897,7 @@ end
 
 
 customEventHooks.registerHandler("OnServerPostInit", Partyhealth.OnServerPostInit)
-customEventHooks.registerValidator("OnPlayerConnect", Partyhealth.OnConnect)
+customEventHooks.registerValidator("OnPlayerFinishLogin", Partyhealth.OnPlayerFinishLogin)
 customEventHooks.registerHandler("OnObjectActivate", Partyhealth.OnActivate)
 customEventHooks.registerHandler("OnGUIAction", Partyhealth.OnGUIAction)
 customEventHooks.registerHandler("OnPlayerDisconnect", Partyhealth.OnDisconnect)
