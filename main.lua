@@ -708,7 +708,11 @@ Partyhealth.LocatePlayer = function(target)-- displays location of player in you
 		end
 	end
 	
-	return region
+	if cell then
+		return cell
+	else
+		return region
+	end
 end
 
 
