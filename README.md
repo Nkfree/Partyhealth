@@ -5,12 +5,17 @@
 You can add another Player into your Friendlist.
 Then if ```Friend1``` 'Activates' ```Friend2``` he gets continuous update of ```Friend2```'s health as GUI or CHAT message.
 
-There is also a Blacklist.
+There is also a Blacklist so nobody can bother you multiple times.
+
+If you follow the instructions Friendlist will display current locations of online friends.
+
+
 
 
 ## How to INSTALL:
 1. Download the ```main.lua``` and put it in */server/scripts/custom/Partyhealth*
 2. Open ```customScripts.lua``` and add this code on separate line: ```Partyhealth = require "custom/Partyhealth/main"```
+3. Download the locations.lua and put it in *server/scripts/* (friendlist will display current location of online friends)
 
 
 ## How to do it in-game (if it needs further explanation):
