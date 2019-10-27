@@ -1,6 +1,8 @@
 jsonInterface = require("jsonInterface")
 tableHelper = require("tableHelper")
 menuHelper = require("menuHelper")
+locations = require("locations")
+logicHandler = require("logicHandler")
 
 -- define tables we'll be working with
 local affectedlist = {}
@@ -14,11 +16,12 @@ Partyhealth.Menu = {}
 Partyhealth.Menu.Cmds = {}
 Partyhealth.Menu.Labels = {}
 Partyhealth.sender = {}
+Partyhealth.PartySender = {}
 
 -- CHANGE THESE ACCORDING TO INSTRUCTIONS
 -- define config entries
 config.displayFastHP = false -- when true you can activate player beforehand and when you add them to your friendlist their hp will get displayed immediatelly
-config.showSameHealthTimes = 3 -- if you don't want same health to be displayed over and over you can set how many times the same value will get displayed; set to 0 to disable
+config.showSameHealthTimes = 0 -- if you don't want same health to be displayed over and over you can set how many times the same value will get displayed; set to 0 for infinite update
 
 -- commands used in-game; change the command inside ""
 Partyhealth.Cmd[1] = "ph.add" -- sends friend request
@@ -38,6 +41,8 @@ config.BusyFriendGuiID = 3255
 config.AcceptFriendGuiID = 3256
 config.RejectFriendGuiID = 3257
 config.IdiotFriendGuiID = 3258
+config.InvitePartyGuiID = 3264
+config.InviteSentGuiID = 3265
 config.isInAcceptedGuiID = 3259
 config.isInRejectedGuiID = 3260
 config.showFriendslistGuiID = 3261
@@ -192,7 +197,6 @@ Partyhealth.OnDisconnect = function(EventStatus, pid)
 			Players[pid].Partyhealth = nil
 		end
 	end
-
 end
 
 
@@ -442,7 +446,6 @@ Partyhealth.Gui = function(pid, targetPID)-- defines how HP is going to be displ
 	local baseHealth = Partyhealth.baseHealth[pid][targetPID]
 	local nameofpid = tes3mp.GetName(targetPID)
 
-	print("Players[pid].Partyhealth[targetPID].sameHealthTimes IF: " .. Players[pid].Partyhealth[targetPID].sameHealthTimes)
 	if Players[pid].Partyhealth[targetPID].compareHealth ~= currentHealth then
 		for k, v in pairs(Players[pid].Partyhealth[targetPID]) do
 			if k == "currentHealth" then
@@ -460,9 +463,9 @@ Partyhealth.Gui = function(pid, targetPID)-- defines how HP is going to be displ
 		if Players[pid].Partyhealth[targetPID].sameHealthTimes == 0 and config.showSameHealthTimes ~= 0 then
 			Players[pid].Partyhealth[targetPID].sameHealthTimes = config.showSameHealthTimes
 		end
-		print("Players[pid].Partyhealth[targetPID].sameHealthTimes IF: " .. Players[pid].Partyhealth[targetPID].sameHealthTimes)
+
 	else
-		if Players[pid].Partyhealth[targetPID].sameHealthTimes > 0 then
+		if Players[pid].Partyhealth[targetPID].sameHealthTimes > 0 or config.showSameHealthTimes == 0 then
 			if healthRatio <= 1 and healthRatio >= 0.75 then
 				tes3mp.MessageBox(pid, 8793, nameofpid .. "'s Health: " .. currentHealth .. "/" .. baseHealth, false)
 			elseif healthRatio < 0.75 and healthRatio >= 0.5 then
@@ -491,7 +494,6 @@ Partyhealth.Chat = function(pid, targetPID)-- defines how HP is going to be disp
 	local baseHealth = Partyhealth.baseHealth[pid][targetPID]
 	local nameofpid = tes3mp.GetName(targetPID)
 
-	print("Players[pid].Partyhealth[targetPID].sameHealthTimes IF: " .. Players[pid].Partyhealth[targetPID].sameHealthTimes)
 	if Players[pid].Partyhealth[targetPID].compareHealth ~= currentHealth then
 		for k, v in pairs(Players[pid].Partyhealth[targetPID]) do
 			if k == "currentHealth" then
@@ -509,9 +511,8 @@ Partyhealth.Chat = function(pid, targetPID)-- defines how HP is going to be disp
 		if Players[pid].Partyhealth[targetPID].sameHealthTimes == 0 and config.showSameHealthTimes ~= 0 then
 			Players[pid].Partyhealth[targetPID].sameHealthTimes = config.showSameHealthTimes
 		end
-		print("Players[pid].Partyhealth[targetPID].sameHealthTimes IF: " .. Players[pid].Partyhealth[targetPID].sameHealthTimes)
 	else
-		if Players[pid].Partyhealth[targetPID].sameHealthTimes > 0 then
+		if Players[pid].Partyhealth[targetPID].sameHealthTimes > 0 or config.showSameHealthTimes == 0 then
 			if healthRatio <= 1 and healthRatio >= 0.75 then
 				tes3mp.SendMessage(pid, config.ColorCasualText .. nameofpid .. "'s Health: " .. currentHealth .. "/" .. baseHealth .. color.Default .. "\n", false)
 			elseif healthRatio < 0.75 and healthRatio >= 0.5 then
@@ -520,14 +521,127 @@ Partyhealth.Chat = function(pid, targetPID)-- defines how HP is going to be disp
 				tes3mp.SendMessage(pid, color.Red .. "Immediatelly Heal: " .. nameofpid .. " (" .. color.Red .. currentHealth .. config.ColorCasualText .. "/" .. color.Red .. baseHealth .. ")" .. color.Default .. "\n", false)
 			end
 			Players[pid].Partyhealth[targetPID].sameHealthTimes = Players[pid].Partyhealth[targetPID].sameHealthTimes - 1
-			print("Players[pid].Partyhealth[targetPID].sameHealthTimes ELSE: " .. Players[pid].Partyhealth[targetPID].sameHealthTimes)
 		end
 	end
 end
 
 
+--other Partyhealth functions
+
+Partyhealth.CreateParty = function(pid)
+		
+	local playerName = tes3mp.GetName(pid)
+
+	if WorldInstance.data.customVariables.Partyhealth == nil then WorldInstance.data.customVariables.Partyhealth = {} end
+	if WorldInstance.data.customVariables.Partyhealth.Groups == nil then WorldInstance.data.customVariables.Partyhealth.Groups = {} end
+	if WorldInstance.data.customVariables.Partyhealth.Groups[playerName] == nil then WorldInstance.data.customVariables.Partyhealth.Groups[playerName] = {} end
+
+	
+	return WorldInstance.data.customVariables.Partyhealth.Groups
+end
+
+Partyhealth.InviteParty = function(pid, targetPID)
+	
+	local messageInvite = config.ColorPlayerName .. playerName .. config.ColorCasualText .. " invites you to join their party!"
+	local messageInviteSent = config.ColorCasualText .. "You have sent " .. config.ColorPlayerName .. targetName .. config.ColorCasualText .. " a party invite ..."
+	local messageBusyParty = config.ColorPlayerName .. targetName .. config.ColorCasualText .. " is currently busy with another request, try it later."
+	
+	local playerName = tes3mp.GetName(pid)
+	local party
+	
+	if WorldInstance.data.customVariables.Partyhealth.Groups[playerName] == nil then
+		party = Partyhealth.CreateParty(pid)
+	else
+		party = WorldInstance.data.customVariables.Partyhealth.Groups
+	end
+	
+	if Partyhealth.isInParty(pid, targetPID, party) then
+		return false
+	else
+		if Partyhealth.PartySender[tostring(targetPID)] == nil then 
+			Partyhealth.PartySender[tostring(targetPID)] = pid
+		else
+			tes3mp.MessageBox(pid, config.BusyFriendGuiID, messageBusyParty)
+			return false
+		end
+		PauseHP(targetPID)
+		tes3mp.CustomMessageBox(targetPID, config.InvitePartyGuiID, messageInvite, 'Accept;Reject')
+		tes3mp.MessageBox(pid, config.InviteSentGuiID, messageInviteSent)
+	end
+end
+		
+
+Partyhealth.isInParty = function(pid, targetPID, groups)
+	
+	local msgIsParty = "Already has another party."
+	local msgIsYourParty = "Already a member of your party."
+	local msgIdiot = "You can't invite yourself to your own party."
+	local msgOffline = "No such player online."
+	
+	local playerName = tes3mp.GetName(pid)
+
+	if pid ~= targetPID then
+		if ValidateNameOrPid(targetPID) then
+		
+			local targetName = tes3mp.GetName(targetPID)
+			
+			for partyName, partyTable in pairs(groups) do
+			
+				for key, tPID in pairs(partyTable) do
+				
+					if partyName == playerName and targetPID == tPID then
+						tes3mp.SendMessage(pid, msgIsYourParty, false)
+						return true
+						
+					elseif partyName ~= playerName then
+					
+						if partyName == targetName or targetPID == tPID then
+							tes3mp.SendMessage(pid, msgIsParty, false)
+							return true
+						end
+						
+					end
+				end
+			end
+			
+		else	
+			tes3mp.SendMessage(pid, msgOffline, false)
+			return false
+		end
+	
+	else
+		tes3mp.SendMessage(pid, msgIdiot, false)
+		return false
+	end
+
+end
+
+Partyhealth.AcceptParty = function(pid)-- defines what happens when you click 'Accept' after somebody sent you friend request
+
+	local playerName = tes3mp.GetName(pid)
+	local senderName = tes3mp.GetName(Partyhealth.PartySender[tostring(pid)])
+	local senderPID = Partyhealth.PartySender[tostring(pid)]
+	local messageAcceptSender = config.ColorPlayerName .. playerName .. config.ColorCasualText .. " is now member of your party!"
+	local messageAcceptParty = config.ColorCasualText .. "You are now member of " .. config.ColorPlayerName .. senderName .. config.ColorCasualText .. "'s party!"
+	local party = WorldInstance.data.customVariables.Partyhealth.Groups
+
+	Partyhealth.PartySender[tostring(pid)] = nil
+
+	table.insert(party[senderName], playerName)
+
+	if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
+		tes3mp.MessageBox(pid, config.AcceptFriendGuiID, messageAcceptParty)
+	end
+
+	if Players[senderPID] ~= nil and Players[senderPID]:IsLoggedIn() then
+		tes3mp.MessageBox(targetPID, config.AcceptFriendGuiID, messageAcceptSender)
+	end
+	UnpauseHP(pid)
+end
+
 
 Partyhealth.isInAccepted = function(pid, targetPID)-- checks for whether player is in one's friendlist
+
 	if Players[targetPID] ~= nil and Players[targetPID]:IsLoggedIn() then
 
 		local playerName = tes3mp.GetName(pid)
@@ -573,6 +687,31 @@ Partyhealth.isInRejected = function(pid, targetPID)-- checks for whether player 
 		return false
 	end
 end
+
+Partyhealth.LocatePlayer = function(target)-- displays location of player in your friendlist
+	local cell
+	local targetName
+	local targetPID = ValidateNameOrPid(target)
+	local region
+	
+	if targetPID then
+		cell = Players[targetPID].data.location.cell
+		region = tes3mp.GetRegion(targetPID)
+		targetName = tes3mp.GetName(targetPID)
+	else
+		return "Offline"
+	end
+	
+	for cellId, celldesc in pairs(locations) do
+		if cell == cellId then
+			return celldesc
+		end
+	end
+	
+	return region
+end
+
+
 
 
 -- GUI functions
@@ -632,7 +771,6 @@ Partyhealth.RejectGui = function(pid)-- defines what happens when you click 'Rej
 end
 
 
-
 Partyhealth.OnGUIAction = function(EventStatus, pid, idGui, data)
 	if idGui == config.AddFriendGuiID then
 		if tonumber(data) == 0 then -- Accept Button
@@ -645,21 +783,23 @@ Partyhealth.OnGUIAction = function(EventStatus, pid, idGui, data)
 	elseif idGui == config.showFriendslistGuiID then
 		if tonumber(data) == 18446744073709551615 then
 			UnpauseHP(pid)
+		elseif tonumber(data) ~= 0 then
+			Partyhealth.RemoveFriend(pid, data)
 		end
-		Partyhealth.RemoveFriend(pid, data)
 
 	elseif idGui == config.showBlacklistGuiID then
 		if tonumber(data) == 18446744073709551615 then
 			UnpauseHP(pid)
+		elseif tonumber(data) ~= 0 then
+			Partyhealth.RemoveBlacklisted(pid, data)
 		end
-		Partyhealth.RemoveBlacklisted(pid, data)
 	end
 end
 
 
 
 Partyhealth.RemoveFriend = function(pid, data)-- defines what happens when you click an entry in friendlist
-	local input = tonumber(data) + 1
+	local input = tonumber(data)
 	local lbTitle = config.ColorFriendlist .. "\n"
 	lbTitle = lbTitle .. color.PaleGoldenRod .. "Click on the name to permanently remove it"
 	local playerName = tes3mp.GetName(pid)
@@ -705,7 +845,7 @@ end
 
 
 Partyhealth.RemoveBlacklisted = function(pid, data)-- defines what happens when you click an entry in blacklist
-	local input = tonumber(data) + 1
+	local input = tonumber(data)
 	local lbTitle = config.ColorBlacklist .. "\n"
 	lbTitle = lbTitle .. color.PaleGoldenRod .. "Click on the name to permanently remove it"
 	local playerName = tes3mp.GetName(pid)
@@ -747,7 +887,7 @@ ValidateNameOrPid = function(NoP)-- checks whether pid used is logged in / conve
 		for id, player in pairs(Players) do
 			if NoP == tes3mp.GetName(id) then
 				targetPID = id
-				break
+				return targetPID
 			end
 		end
 	end
@@ -761,7 +901,7 @@ end
 
 FriendslistToListBox = function(pid)-- converts data from .json file to list that can be displayed on GUI as friendlist
 	local playerName = tes3mp.GetName(pid)
-	local list = ""
+	local list = "Player:" .. GetTextSpaceAmount("Player:") .. "Location: \n"
 	local divider = ""
 
 	if friendsData[playerName] == nil then
@@ -782,10 +922,10 @@ FriendslistToListBox = function(pid)-- converts data from .json file to list tha
 
 		if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
 			if key % 2 == 1 then
-				list = list .. color.Gold .. tName
+				list = list .. color.Gold .. tName .. GetTextSpaceAmount(tName) .. config.ColorCasualText .. Partyhealth.LocatePlayer(tName)
 				list = list .. divider
 			else
-				list = list .. color.PaleGoldenRod .. tName
+				list = list .. color.PaleGoldenRod .. tName .. GetTextSpaceAmount(tName) .. config.ColorCasualText .. Partyhealth.LocatePlayer(tName)
 				list = list .. divider
 			end
 		end
@@ -797,7 +937,7 @@ end
 
 BlacklistToListBox = function(pid)-- converts data from .json file to list that can be displayed on GUI as blacklist
 	local playerName = tes3mp.GetName(pid)
-	local list = ""
+	local list = "Player:\n"
 	local divider = ""
 
 	if friendsData[playerName] == nil then
@@ -827,6 +967,18 @@ BlacklistToListBox = function(pid)-- converts data from .json file to list that 
 		end
 	end
 	return list
+end
+
+
+
+GetTextSpaceAmount = function(target)
+local spaceA = 20
+local space = ""
+local spaceDiff = spaceA - #target
+for i = 1, spaceDiff do
+space = space .. " "
+end
+return space
 end
 
 
@@ -867,7 +1019,6 @@ customEventHooks.registerHandler("OnPlayerAuthentified", Partyhealth.OnPlayerAut
 customEventHooks.registerHandler("OnObjectActivate", Partyhealth.OnActivate)
 customEventHooks.registerHandler("OnGUIAction", Partyhealth.OnGUIAction)
 customEventHooks.registerHandler("OnPlayerDisconnect", Partyhealth.OnDisconnect)
-
 
 
 customCommandHooks.registerCommand(Partyhealth.Cmd[9], Partyhealth.ComHelp)
